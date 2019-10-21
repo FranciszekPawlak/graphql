@@ -1,6 +1,23 @@
-import * as userService from './services/user'
+import * as userService from '../services/user'
+import {
+    combineResolvers
+} from 'graphql-resolvers'
+import {
+    isAuthenticated
+} from './auth'
+
 export default {
     Query: {
+        me: combineResolvers(isAuthenticated, (parent, args, {
+            models,
+            userId
+        }) => {
+            models.User.findOne({
+                where: {
+                    id: userId
+                }
+            })
+        }),
         allUsers: (parent, args, {
             models
         }) => models.User.findAll(),
@@ -23,6 +40,13 @@ export default {
         }, {
             models
         }) => userService.register(firstName, lastName, email, password),
+        loginUser: (parent, {
+                email,
+                password
+            }, {
+                models
+            }) =>
+            userService.login(email, password),
         updateUser: (parent, {
             id,
             firstName,
